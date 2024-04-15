@@ -11,8 +11,8 @@ def trainCNNLSTM(epochs=200, wtnum=0, deviceNum=0,lr = 2e-4,weight_decay = 0,
     torch.cuda.set_device(deviceNum)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    windL=50#historical length
-    predL=6#prediction length
+    windL=50 #historical length
+    predL=6 #prediction length
 
     batch_size = 64
 

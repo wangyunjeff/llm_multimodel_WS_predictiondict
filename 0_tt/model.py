@@ -56,10 +56,10 @@ class CNNAndLSTM(nn.Module):
 
 
         ###ROC
-        weightL = self.softwt(self.weightPML/self.tou)
-        weightR = self.softp(self.weightPMR/self.tou)
-        x = torch.matmul(weightL, x)
-        x = torch.matmul(x, weightR)  # bs,wl,wt,p
+        # weightL = self.softwt(self.weightPML/self.tou)
+        # weightR = self.softp(self.weightPMR/self.tou)
+        # x = torch.matmul(weightL, x)
+        # x = torch.matmul(x, weightR)  # bs,wl,wt,p
         ##CNNLSTM
         bs, wl, wt, params=x.shape
         x = x.view(bs * wl, wt, params)
@@ -67,4 +67,4 @@ class CNNAndLSTM(nn.Module):
         x = x.view(bs, wl, -1)
         x,_ = self.lstm(x)
         x = self.outfc(x[:, -1, :])
-        return x, weightL, weightR
+        return x

@@ -21,8 +21,8 @@ class SCADADataset(Dataset):
     def __init__(self,windL ,predL ,wtnum):
         '''
 
-        :param windL:
-        :param predL:
+        :param windL: 窗口大小
+        :param predL: 预测长度
         :param wtnum:
         '''
         self.data =getDataSet()
