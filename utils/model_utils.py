@@ -1,17 +1,13 @@
-from models.model_a import ModelA
-from models.model_b import ModelB
+from models.lstm_model import LSTM
+from models.model_test import CNN
+
 import config
 
 
-def save_model():
-    pass
-def load_model():
-    pass
-
 def model_factory(model_type):
     model_classes = {
-        'ModelA': ModelA,
-        'ModelB': ModelB
+        'LSTM': LSTM,
+        'CNN': CNN
     }
     try:
         model_class = model_classes[model_type]
@@ -20,3 +16,8 @@ def model_factory(model_type):
         raise ValueError(f"Model type {model_type} not supported")
 
 model = model_factory(config.model_config['model_type'])
+
+def save_model():
+    pass
+def load_model():
+    pass
