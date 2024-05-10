@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 import torch
 import torch.nn as nn
-from model.lstm_model import LSTM
+from models.lstm_model import LSTM
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 
