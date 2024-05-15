@@ -12,13 +12,16 @@ from data.dataloader import WindTurbineDataset
 
 # Load data using the WindTurbineDataset class
 seq_length = 20
-path = 'H:\\Code_F\\llm_multimodel_WS_predictiondict\\data\\la-haute-borne-data-2013-2016_new-3columns.csv'
+# path = '../data/la-haute-borne-data-2013-2016_sorted.csv'
+path = r'/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/la-haute-borne-data-2013-2016_sorted.csv'
 columns = ['Ws_avg']
 train_dataset = WindTurbineDataset(path, seq_length, columns=columns, split='train')
 test_dataset = WindTurbineDataset(path, seq_length, columns=columns, split='test')
 # DataLoader
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=64)
+
+
 
 # Model instantiation
 model = LSTM(input_size=1, hidden_layer_size=100, output_size=1)

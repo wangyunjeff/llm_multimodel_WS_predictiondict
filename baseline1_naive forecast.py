@@ -5,12 +5,14 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
 # Load data
-data_path = 'H:\\Code_F\\llm_multimodel_WS_predictiondict\\data\\la-haute-borne-data-2013-2016_new-3columns.csv'
+data_path = '/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/la-haute-borne-data-2013-2016_new-3columns.csv'
+# data_path = r'/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/la-haute-borne-data-2013-2016_sorted.csv'
 data = pd.read_csv(data_path, index_col=0, parse_dates=True)
 data = data.iloc[:, 1:2]  # Assuming this is the target column
 data = data.interpolate()  # Handling missing values
-scaler = MinMaxScaler(feature_range=(0, 1))
-scaled_data = scaler.fit_transform(data)
+scaled_data = np.array(data)
+# scaler = MinMaxScaler(feature_range=(0, 1))
+# scaled_data = scaler.fit_transform(data)
 
 # Function to create sequences and corresponding targets with multiple steps ahead
 def create_sequences(data, seq_length, pred_length):

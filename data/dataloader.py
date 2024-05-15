@@ -59,12 +59,12 @@ class WindTurbineDataset(Dataset):
 
 
 # Usage
-csv_file = r'H:\Code_F\llm_multimodel_WS_predictiondict\data\la-haute-borne-data-2013-2016_new-3columns.csv'
-seq_length = 20
-columns = ['Ws_avg'] # P_avg, Ws_avg, Gost_avg
-
-train_dataset = WindTurbineDataset(csv_file, seq_length, columns, 'train')
-test_dataset = WindTurbineDataset(csv_file, seq_length, columns, 'test')
-
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+# csv_file = r'H:\Code_F\llm_multimodel_WS_predictiondict\data\la-haute-borne-data-2013-2016_new-3columns.csv'
+# seq_length = 20
+# columns = ['Ws_avg'] # P_avg, Ws_avg, Gost_avg
+#
+# train_dataset = WindTurbineDataset(csv_file, seq_length, columns, 'train')
+# test_dataset = WindTurbineDataset(csv_file, seq_length, columns, 'test')
+#
+# train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+# test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)

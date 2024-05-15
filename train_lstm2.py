@@ -9,13 +9,14 @@ from torch.utils.data import TensorDataset, DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
 # Load data
-data_path = 'H:\\Code_F\\llm_multimodel_WS_predictiondict\\data\\la-haute-borne-data-2013-2016_new-3columns.csv'
+data_path = r'/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/sorted_resample_la-haute-borne-data-2013-2016.csv'
 data = pd.read_csv(data_path, index_col=0, parse_dates=True)
 
 # Normalize and interpolate the data
 data = data.interpolate()
-scaler = MinMaxScaler(feature_range=(0, 1))
-scaled_data = scaler.fit_transform(data)
+scaled_data = np.array(data)
+# scaler = MinMaxScaler(feature_range=(0, 1))
+# scaled_data = scaler.fit_transform(data)
 
 # Function to create sequences
 def create_sequences(data, seq_length):
@@ -83,7 +84,7 @@ test_plot[:] = np.nan
 
 
 # Training the model
-epochs = 100
+epochs = 1000
 for epoch in range(epochs):
     model.train()
     total_loss = 0
@@ -101,31 +102,32 @@ for epoch in range(epochs):
 
     avg_loss = total_loss / len(train_loader)
     print(f'Epoch {epoch} average loss: {avg_loss}')
+    if epoch % 50 == 0:
 
-    # Generate predictions and prepare the plotting data
-    with torch.no_grad():
-        model.eval()
+        # Generate predictions and prepare the plotting data
+        with torch.no_grad():
+            model.eval()
 
-        # Generate predictions for the training data
-        X_train_tensor = torch.tensor(X_train, dtype=torch.float32).to(device)
-        train_pred = model(X_train_tensor)[:, 0].cpu().numpy()
-        train_plot[lookback:train_size + lookback] = train_pred
+            # Generate predictions for the training data
+            X_train_tensor = torch.tensor(X_train, dtype=torch.float32).to(device)
+            train_pred = model(X_train_tensor)[:, 0].cpu().numpy()
+            train_plot[lookback:train_size + lookback] = train_pred
 
-        # Generate predictions for the testing data
-        X_test_tensor = torch.tensor(X_test, dtype=torch.float32).to(device)
-        test_pred = model(X_test_tensor)[:, 0].cpu().numpy()
-        test_plot[train_size + lookback:] = test_pred
+            # Generate predictions for the testing data
+            X_test_tensor = torch.tensor(X_test, dtype=torch.float32).to(device)
+            test_pred = model(X_test_tensor)[:, 0].cpu().numpy()
+            test_plot[train_size + lookback:] = test_pred
 
-    # Plotting
-    plt.figure(figsize=(50, 6))
-    plt.plot(timeseries, color='blue', label='Actual')
-    plt.plot(train_plot, color='red', label='Train Predictions')
-    plt.plot(test_plot, color='green', label='Test Predictions')
-    plt.title('Time Series Prediction')
-    plt.xlabel('Time')
-    plt.ylabel('Target Variable')
-    plt.legend()
-    plt.show()
+        # Plotting
+        plt.figure(figsize=(50, 6))
+        plt.plot(timeseries, color='blue', label='Actual')
+        plt.plot(train_plot, color='red', label='Train Predictions')
+        plt.plot(test_plot, color='green', label='Test Predictions')
+        plt.title('Time Series Prediction')
+        plt.xlabel('Time')
+        plt.ylabel('Target Variable')
+        plt.legend()
+        plt.show()
 
 
 
