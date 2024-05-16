@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
 # Load data
-data_path = '/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/la-haute-borne-data-2013-2016_new-3columns.csv'
+data_path = './data/sorted_resample_la-haute-borne-data-2013-2016.csv'
 # data_path = r'/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/la-haute-borne-data-2013-2016_sorted.csv'
 data = pd.read_csv(data_path, index_col=0, parse_dates=True)
 data = data.iloc[:, 1:2]  # Assuming this is the target column

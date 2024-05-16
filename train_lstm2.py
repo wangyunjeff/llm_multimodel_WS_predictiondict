@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 # Load data
 data_path = r'/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/sorted_resample_la-haute-borne-data-2013-2016.csv'
-data = pd.read_csv(data_path, index_col=0, parse_dates=True)
+data = pd.read_csv(data_path, index_col=0, parse_dates=True).iloc[:,1:2]
 
 # Normalize and interpolate the data
 data = data.interpolate()
@@ -23,7 +23,7 @@ def create_sequences(data, seq_length):
     xs, ys = [], []
     for i in range(len(data) - seq_length):
         x = data[i:(i + seq_length), :]
-        y = data[i + seq_length, 1]  # Assuming column 1 is the target variable
+        y = data[i + seq_length, 0]  # Assuming column 1 is the target variable
         xs.append(x)
         ys.append(y)
     return np.array(xs), np.array(ys)
@@ -60,7 +60,7 @@ class LSTM(nn.Module):
         return predictions
 
 # Model instantiation
-model = LSTM(input_size=3, hidden_layer_size=100, output_size=1)
+model = LSTM(input_size=1, hidden_layer_size=100, output_size=1)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
@@ -69,7 +69,7 @@ loss_function = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Assuming timeseries is the original target variable (column 1 in your case)
-timeseries = data.iloc[:, 1].values  # Update the column index if needed
+timeseries = data.iloc[:, 0].values  # Update the column index if needed
 
 # Length of the sequence used for prediction
 lookback = seq_length
@@ -102,11 +102,21 @@ for epoch in range(epochs):
 
     avg_loss = total_loss / len(train_loader)
     print(f'Epoch {epoch} average loss: {avg_loss}')
-    if epoch % 50 == 0:
+
+    if epoch % 25 == 0:
+        model.eval()
+        total_test_loss = 0
+        with torch.no_grad():
+            for seq, labels in test_loader:
+                seq, labels = seq.to(device), labels.to(device)
+                y_pred = model(seq)
+                loss = loss_function(y_pred.squeeze(), labels)
+                total_test_loss += loss.item()
+        avg_test_loss = total_test_loss / len(test_loader)
+        print(f'Epoch {epoch} average test loss: {avg_test_loss}')
 
         # Generate predictions and prepare the plotting data
         with torch.no_grad():
-            model.eval()
 
             # Generate predictions for the training data
             X_train_tensor = torch.tensor(X_train, dtype=torch.float32).to(device)
@@ -127,8 +137,8 @@ for epoch in range(epochs):
         plt.xlabel('Time')
         plt.ylabel('Target Variable')
         plt.legend()
-        plt.show()
-
+        # plt.show()
+        plt.savefig(f'{epoch}.png')
 
 
 
