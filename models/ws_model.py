@@ -19,7 +19,7 @@ class WindSpeedPredictionModel(nn.Module):
         self.upper_conv = nn.Conv3d(in_channels=upper_dim, out_channels=hidden_dim, kernel_size=3, padding=1)
 
         self.time_series_proj = nn.Linear(time_series_dim, hidden_dim)  # Project time_series to hidden_dim
-        self.upper_proj = nn.Linear(upper_dim * hidden_dim * 13, hidden_dim)  # Project upper_features_flat to hidden_dim
+        self.upper_proj = nn.Linear(hidden_dim * 13, hidden_dim)  # Project upper_features_flat to hidden_dim
 
         self.cross_attention = CrossAttention(dim=hidden_dim, num_heads=num_heads)
 
@@ -35,7 +35,7 @@ class WindSpeedPredictionModel(nn.Module):
 
         surface_features_flat = surface_features.view(surface_features.size(0), surface_features.size(1), -1).permute(0, 2, 1)  # (batch_size, 11*11, hidden_dim)
         upper_features_flat = upper_features.view(upper_features.size(0), upper_features.size(1), upper_features.size(2), -1).permute(0, 3, 1, 2).contiguous().view(
-            upper_features.size(0), -1, upper_features.size(1) * upper_features.size(2) * hidden_dim)  # (batch_size, 11*11, upper_dim * hidden_dim * 13)
+            upper_features.size(0), -1, hidden_dim * 13)  # (batch_size, 11*11, hidden_dim * 13)
 
         upper_features_flat_proj = self.upper_proj(upper_features_flat)  # (batch_size, 11*11, hidden_dim)
         time_series_proj = self.time_series_proj(time_series)  # (batch_size, seq_len, hidden_dim)
