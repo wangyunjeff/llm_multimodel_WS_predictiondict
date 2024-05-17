@@ -9,8 +9,8 @@ from torch.utils.data import TensorDataset, DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
 # Load data
-data_path = r'/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/sorted_resample_la-haute-borne-data-2013-2016.csv'
-data = pd.read_csv(data_path, index_col=0, parse_dates=True).iloc[:,1:2]
+data_path = './data/sorted_resample_la-haute-borne-data-2013-2016_1column.csv'
+data = pd.read_csv(data_path, index_col=0, parse_dates=True)
 
 # Normalize and interpolate the data
 data = data.interpolate()

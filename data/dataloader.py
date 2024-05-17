@@ -1,9 +1,8 @@
+import pandas as pd
+import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
-import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-import numpy as np
-
 
 class WindTurbineDataset(Dataset):
     def __init__(self, csv_file, seq_length, columns=None, split='train', train_split=0.8):
@@ -25,13 +24,15 @@ class WindTurbineDataset(Dataset):
         data = data.interpolate().values  # Interpolate and convert to NumPy array
 
         # Normalize data
-        self.scaler = MinMaxScaler(feature_range=(0, 1))
-        self.data = self.scaler.fit_transform(data)
+        # self.scaler = MinMaxScaler(feature_range=(0, 1))
+        # self.data = self.scaler.fit_transform(data)
+
+        self.data = data
 
         # Create sequences
         self.X, self.y = self.create_sequences(self.data, seq_length)
 
-        # Determine split indices
+        # Determine split index
         self.train_size = int(len(self.X) * train_split)
         self.split = split
 
@@ -51,11 +52,30 @@ class WindTurbineDataset(Dataset):
             return len(self.X) - self.train_size
 
     def __getitem__(self, idx):
-        if self.split != 'train':
+        if self.split == 'test':
             idx += self.train_size
         sequence = torch.tensor(self.X[idx], dtype=torch.float32)
         label = torch.tensor(self.y[idx], dtype=torch.float32).squeeze()  # Squeeze in case of single column
         return sequence, label
+if __name__ == '__main__':
+
+    # Example usage
+    csv_file = 'sorted_resample_la-haute-borne-data-2013-2016_1column.csv'
+    seq_length = 24  # Example sequence length
+
+    train_dataset = WindTurbineDataset(csv_file, seq_length, split='train')
+    test_dataset = WindTurbineDataset(csv_file, seq_length, split='test')
+
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+    for sequence, label in train_dataloader:
+        print(sequence.shape, label.shape)
+        break
+
+    for sequence, label in test_dataloader:
+        print(sequence.shape, label.shape)
+        break
 
 
 # Usage
