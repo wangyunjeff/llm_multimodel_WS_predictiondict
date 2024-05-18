@@ -13,7 +13,7 @@ from data.dataloader import WindTurbineDataset
 # Load data using the WindTurbineDataset class
 seq_length = 20
 # path = '../data/la-haute-borne-data-2013-2016_sorted.csv'
-csv_file = './data/sorted_resample_la-haute-borne-data-2013-2016_1column.csv'
+csv_file = './data/july_2013_extracted_data.csv'
 
 columns = ['Ws_avg']
 train_dataset = WindTurbineDataset(csv_file, seq_length, split='train')

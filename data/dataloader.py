@@ -57,6 +57,8 @@ class WindTurbineDataset(Dataset):
         sequence = torch.tensor(self.X[idx], dtype=torch.float32)
         label = torch.tensor(self.y[idx], dtype=torch.float32).squeeze()  # Squeeze in case of single column
         return sequence, label
+
+
 if __name__ == '__main__':
 
     # Example usage
@@ -88,3 +90,140 @@ if __name__ == '__main__':
 #
 # train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 # test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+
+
+# import torch
+# from torch.utils.data import Dataset, DataLoader
+# import numpy as np
+# import pandas as pd
+#
+#
+# class WindSpeedDataset(Dataset):
+#     def __init__(self, surface_file, upper_file, wind_speed_file, seq_len=6):
+#         # Load the data
+#         self.surface_data = np.load(surface_file)  # Shape: (4, 721, 1440)
+#         self.upper_data = np.load(upper_file)  # Shape: (5, 13, 721, 1440)
+#         self.wind_speed_data = np.load(wind_speed_file)  # Shape: (number_of_samples, 1)
+#
+#         # Ensure the data length matches for synchronization
+#         self.seq_len = seq_len
+#         self.num_hours = self.surface_data.shape[1]  # Assuming hourly data
+#         self.num_ten_min_intervals = self.wind_speed_data.shape[0]
+#
+#         # Verify data consistency
+#         assert self.num_hours * 6 == self.num_ten_min_intervals, "Data length mismatch"
+#
+#     def __len__(self):
+#         return self.num_hours - self.seq_len + 1
+#
+#     def __getitem__(self, idx):
+#         # Surface and upper-air data for the sequence
+#         surface_seq = self.surface_data[:, idx:idx + self.seq_len, :]
+#         upper_seq = self.upper_data[:, :, idx:idx + self.seq_len, :]
+#
+#         # Repeat the hourly data to match the 10-minute interval data
+#         surface_seq_repeated = np.repeat(surface_seq, 6, axis=1)
+#         upper_seq_repeated = np.repeat(upper_seq, 6, axis=2)
+#
+#         # Corresponding wind speed data for the sequence
+#         wind_speed_seq = self.wind_speed_data[idx * 6:(idx + self.seq_len) * 6, :]
+#
+#         return (
+#             torch.tensor(surface_seq_repeated, dtype=torch.float32),
+#             torch.tensor(upper_seq_repeated, dtype=torch.float32),
+#             torch.tensor(wind_speed_seq, dtype=torch.float32)
+#         )
+#
+#
+# class WindTurbineDataset(Dataset):
+#     def __init__(self, csv_file, seq_length, columns=None, split='train', train_split=0.8):
+#         """
+#         Args:
+#             csv_file (string): Path to the CSV file with data.
+#             seq_length (int): Number of time steps in each input sequence.
+#             columns (list of str, optional): List of column names to include in the dataset. If None, all columns are used.
+#             split (str): 'train' for training data, 'test' for testing data.
+#             train_split (float): Fraction of data to be used for training.
+#         """
+#         # Load and preprocess data
+#         data = pd.read_csv(csv_file, index_col=0, parse_dates=True)
+#
+#         # Select columns
+#         if columns is not None:
+#             data = data[columns]
+#
+#         data = data.interpolate().values  # Interpolate and convert to NumPy array
+#
+#         # Normalize data (if necessary)
+#         # self.scaler = MinMaxScaler(feature_range=(0, 1))
+#         # self.data = self.scaler.fit_transform(data)
+#
+#         self.data = data
+#
+#         # Create sequences
+#         self.X, self.y = self.create_sequences(self.data, seq_length)
+#
+#         # Determine split index
+#         self.train_size = int(len(self.X) * train_split)
+#         self.split = split
+#
+#     def create_sequences(self, data, seq_length):
+#         xs, ys = [], []
+#         for i in range(len(data) - seq_length):
+#             x = data[i:(i + seq_length), :]
+#             y = data[i + seq_length, :]  # Supports multiple target variables
+#             xs.append(x)
+#             ys.append(y)
+#         return np.array(xs), np.array(ys)
+#
+#     def __len__(self):
+#         if self.split == 'train':
+#             return self.train_size
+#         else:
+#             return len(self.X) - self.train_size
+#
+#     def __getitem__(self, idx):
+#         if self.split == 'test':
+#             idx += self.train_size
+#         sequence = torch.tensor(self.X[idx], dtype=torch.float32)
+#         label = torch.tensor(self.y[idx], dtype=torch.float32).squeeze()  # Squeeze in case of single column
+#         return sequence, label
+#
+#
+# class CombinedDataset(Dataset):
+#     def __init__(self, surface_file, upper_file, wind_speed_file, csv_file, seq_len=6, seq_length_turbine=6,
+#                  columns=None, split='train', train_split=0.8):
+#         self.wind_speed_dataset = WindSpeedDataset(surface_file, upper_file, wind_speed_file, seq_len)
+#         self.wind_turbine_dataset = WindTurbineDataset(csv_file, seq_length_turbine, columns, split, train_split)
+#         self.split = split
+#
+#         if self.split == 'train':
+#             self.len = min(len(self.wind_speed_dataset), len(self.wind_turbine_dataset))
+#         else:
+#             self.len = min(len(self.wind_speed_dataset), len(self.wind_turbine_dataset))
+#
+#     def __len__(self):
+#         return self.len
+#
+#     def __getitem__(self, idx):
+#         wind_speed_data = self.wind_speed_dataset[idx]
+#         wind_turbine_data = self.wind_turbine_dataset[idx]
+#
+#         return wind_speed_data, wind_turbine_data
+#
+#
+# # Example usage
+# surface_file = 'input_surface.npy'
+# upper_file = 'input_upper.npy'
+# wind_speed_file = 'wind_speed.npy'
+# csv_file = 'path_to_your_csv_file.csv'
+# seq_len = 6
+# seq_length_turbine = 6
+#
+# combined_dataset = CombinedDataset(surface_file, upper_file, wind_speed_file, csv_file, seq_len, seq_length_turbine)
+# combined_dataloader = DataLoader(combined_dataset, batch_size=8, shuffle=True)
+#
+# for (surface, upper, wind_speed), (turbine_seq, turbine_label) in combined_dataloader:
+#     print(surface.shape, upper.shape, wind_speed.shape)
+#     print(turbine_seq.shape, turbine_label.shape)
+#     break

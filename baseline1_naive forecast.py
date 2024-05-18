@@ -5,10 +5,10 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
 # Load data
-data_path = './data/sorted_resample_la-haute-borne-data-2013-2016.csv'
+data_path = './data/july_2013_extracted_data.csv'
 # data_path = r'/Users/wangyunjeff/PycharmProjects/llm_multimodel_WS_predictiondict/data/la-haute-borne-data-2013-2016_sorted.csv'
 data = pd.read_csv(data_path, index_col=0, parse_dates=True)
-data = data.iloc[:, 1:2]  # Assuming this is the target column
+  # Assuming this is the target column
 data = data.interpolate()  # Handling missing values
 scaled_data = np.array(data)
 # scaler = MinMaxScaler(feature_range=(0, 1))
