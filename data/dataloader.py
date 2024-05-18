@@ -270,8 +270,8 @@ class WindTurbineDataset(Dataset):
     def create_sequences(self, surface_data, upper_data, wind_data, seq_length):
         xs_surface, xs_upper, xs_wind, ys = [], [], [], []
         for i in range(len(wind_data) - seq_length):
-            x_surface = surface_data[:, i:(i + seq_length)]
-            x_upper = upper_data[:, :, i:(i + seq_length)]
+            x_surface = surface_data[i:(i + seq_length), :, :, :]
+            x_upper = upper_data[i:(i + seq_length), :, :, :, :]
             x_wind = wind_data[i:(i + seq_length), :]
             y = wind_data[i + seq_length, :]
             xs_surface.append(x_surface)
