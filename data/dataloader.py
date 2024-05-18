@@ -227,3 +227,83 @@ if __name__ == '__main__':
 #     print(surface.shape, upper.shape, wind_speed.shape)
 #     print(turbine_seq.shape, turbine_label.shape)
 #     break
+import numpy as np
+import pandas as pd
+import torch
+from torch.utils.data import Dataset, DataLoader
+
+
+class WindTurbineDataset(Dataset):
+    def __init__(self, csv_file, input_surface_file, input_upper_file, seq_length, columns=None, split='train',
+                 train_split=0.8):
+        """
+        Args:
+            csv_file (string): Path to the CSV file with wind speed time series data.
+            input_surface_file (string): Path to the numpy file with surface variables data.
+            input_upper_file (string): Path to the numpy file with upper-air variables data.
+            seq_length (int): Number of time steps in each input sequence.
+            columns (list of str, optional): List of column names to include in the dataset. If None, all columns are used.
+            split (str): 'train' for training data, 'test' for testing data.
+            train_split (float): Fraction of data to be used for training.
+        """
+        # Load and preprocess wind speed time series data
+        self.wind_speed_data = pd.read_csv(csv_file, index_col=0, parse_dates=True)
+
+        if columns is not None:
+            self.wind_speed_data = self.wind_speed_data[columns]
+
+        self.wind_speed_data = self.wind_speed_data.interpolate().values  # Interpolate and convert to NumPy array
+
+        # Load surface and upper-air variables data
+        self.surface_data = np.load(input_surface_file)
+        self.upper_data = np.load(input_upper_file)
+
+        # Create sequences
+        self.seq_length = seq_length
+        self.X_surface, self.X_upper, self.X_wind, self.y = self.create_sequences(self.surface_data, self.upper_data,
+                                                                                  self.wind_speed_data, seq_length)
+
+        # Determine split index
+        self.train_size = int(len(self.X_wind) * train_split)
+        self.split = split
+
+    def create_sequences(self, surface_data, upper_data, wind_data, seq_length):
+        xs_surface, xs_upper, xs_wind, ys = [], [], [], []
+        for i in range(len(wind_data) - seq_length):
+            x_surface = surface_data[:, i:(i + seq_length)]
+            x_upper = upper_data[:, :, i:(i + seq_length)]
+            x_wind = wind_data[i:(i + seq_length), :]
+            y = wind_data[i + seq_length, :]
+            xs_surface.append(x_surface)
+            xs_upper.append(x_upper)
+            xs_wind.append(x_wind)
+            ys.append(y)
+        return np.array(xs_surface), np.array(xs_upper), np.array(xs_wind), np.array(ys)
+
+    def __len__(self):
+        if self.split == 'train':
+            return self.train_size
+        else:
+            return len(self.X_wind) - self.train_size
+
+    def __getitem__(self, idx):
+        if self.split == 'test':
+            idx += self.train_size
+        sequence_surface = torch.tensor(self.X_surface[idx], dtype=torch.float32)
+        sequence_upper = torch.tensor(self.X_upper[idx], dtype=torch.float32)
+        sequence_wind = torch.tensor(self.X_wind[idx], dtype=torch.float32)
+        label = torch.tensor(self.y[idx], dtype=torch.float32).squeeze()  # Squeeze in case of single column
+        return (sequence_surface, sequence_upper, sequence_wind), label
+
+
+# Example usage
+csv_file = 'wind_speed_data.csv'
+input_surface_file = 'input_surface.npy'
+input_upper_file = 'input_upper.npy'
+seq_length = 10
+
+dataset = WindTurbineDataset(csv_file, input_surface_file, input_upper_file, seq_length, split='train')
+train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+test_dataset = WindTurbineDataset(csv_file, input_surface_file, input_upper_file, seq_length, split='test')
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
